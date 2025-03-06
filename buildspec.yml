@@ -1,5 +1,10 @@
+
 version: 0.2
-version: 0.2
+env:
+  variables:
+    AWS_ACCOUNT_ID: "651472476413"  # Replace with your actual AWS Account ID
+    AWS_DEFAULT_REGION: "ap-south-1"
+ 
 phases:
   pre_build:
     commands:
@@ -8,7 +13,7 @@ phases:
       - REPOSITORY_URI=651472476413.dkr.ecr.ap-south-1.amazonaws.com/nodejscicd
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - aws ecr get-login-password --region ap-south-1 $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 651472476413 $REPOSITORY_URI 651472476413.dkr.ecr.ap-south-1.amazonaws.com/nodejscicd
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI 
   build:
     commands:
       - echo Build started on `date`
