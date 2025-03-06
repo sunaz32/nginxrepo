@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - sudo yum install -y rsync
+
+  build:
+    commands:
+      - echo Deploying NGINX config and website...
+      - aws ssm send-command --document-name "AWS-RunShellScript" --targets '[{"Key":"tag:Name","Values":["ECS-Nginx-Instance"]}]' --parameters 'commands=["sudo rsync -avz ./ /var/www/html/", "sudo systemctl restart nginx"]' --region us-east-1
