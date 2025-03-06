@@ -1,39 +1,53 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_ACCOUNT_ID: "651472476413"  # Your AWS Account ID
-    AWS_DEFAULT_REGION: "ap-south-1"
-    REPOSITORY_NAME: "nodejscicd"
-
 phases:
+
   pre_build:
+
     commands:
-      - echo "Logging in to Amazon ECR..."
+
+      - echo Logging in to Amazon ECR...
+
       - aws --version
-      - REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$REPOSITORY_NAME"
-      - echo "ECR Repository URI: $REPOSITORY_URI"
+
+      - REPOSITORY_URI=651472476413.dkr.ecr.ap-south-1.amazonaws.com/nodejscicd
+
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:-latest}
-      - echo "Logging into ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$REPOSITORY_URI"
+
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   build:
+
     commands:
-      - echo "Build started on $(date)"
-      - echo "Building the Docker image..."
-      - docker build -t "$REPOSITORY_URI:latest" .
-      - docker tag "$REPOSITORY_URI:latest" "$REPOSITORY_URI:$IMAGE_TAG"
+
+      - echo Build started on `date`
+
+      - echo Building the Docker image...
+
+      - docker build -t $REPOSITORY_URI:latest .
+
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
+
     commands:
-      - echo "Build completed on $(date)"
-      - echo "Pushing the Docker images to ECR..."
-      - docker push "$REPOSITORY_URI:latest"
-      - docker push "$REPOSITORY_URI:$IMAGE_TAG"
-      - echo "Creating imagedefinitions.json..."
-      - printf '[{"name":"nginx-js","imageUri":"%s"}]' "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
+
+      - echo Build completed on `date`
+
+      - echo Pushing the Docker images...
+
+      - docker push $REPOSITORY_URI:latest
+
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+
+      - echo Writing image definitions file...
+
+      - printf '[{"name":"nginx-js","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-  files:
-    - imagedefinitions.json
+
+    files: imagedefinitions.json
+
+ 
