@@ -1,12 +1,27 @@
 version: 0.2
-
+version: 0.2
 phases:
-  install:
+  pre_build:
     commands:
-      - echo Installing dependencies...
-      - sudo yum install -y rsync
-
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - REPOSITORY_URI=651472476413.dkr.ecr.ap-south-1.amazonaws.com/nodejscicd
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
   build:
     commands:
-      - echo Deploying NGINX config and website...
-      - aws ssm send-command --document-name "AWS-RunShellScript" --targets '[{"Key":"tag:Name","Values":["ECS-Nginx-Instance"]}]' --parameters 'commands=["sudo rsync -avz ./ /var/www/html/", "sudo systemctl restart nginx"]' --region us-east-1
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"nginx-js","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+    files: imagedefinitions.json
