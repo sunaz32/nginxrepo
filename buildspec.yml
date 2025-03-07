@@ -11,7 +11,6 @@ phases:
       - aws --version
 
       - REPOSITORY_URI=651472476413.dkr.ecr.ap-south-1.amazonaws.com/nodejscicd
-
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
       - IMAGE_TAG=${COMMIT_HASH:=latest}
