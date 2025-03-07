@@ -16,7 +16,7 @@ phases:
 
       - IMAGE_TAG=${COMMIT_HASH:=latest}
 
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION || echo "ECR login password retrieval failed!"
 
   build:
 
