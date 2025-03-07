@@ -47,7 +47,5 @@ phases:
       - printf '[{"name":"nginx-js","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-
-    files: imagedefinitions.json
-
- 
+  files:
+    - "dist/**/*"
